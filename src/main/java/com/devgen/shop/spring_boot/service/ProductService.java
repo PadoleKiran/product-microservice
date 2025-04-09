@@ -4,10 +4,11 @@ import com.devgen.shop.spring_boot.model.Category;
 import com.devgen.shop.spring_boot.model.Product;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
 
 @Service
 public class ProductService {
@@ -75,7 +76,7 @@ public class ProductService {
     }
 
     // this api is for search products by category
-    public List<Product> getByCategory(Category category) {
+    public List<Product> searchByCategory(Category category) {
         List<Product> matchingProducts = new ArrayList<>();
         for (Product product : products.values()) {
             if (product.getCategory().equals(category)) {
@@ -83,5 +84,40 @@ public class ProductService {
             }
         }
         return matchingProducts;
+    }
+
+    public List<Product> searchByName(String name) {
+//        List<Product> matchingProducts = new ArrayList<>();
+//        for (Product product : products.values()) {
+//            if (product.getName().equals(name)) {
+//                matchingProducts.add(product);
+//            }
+//        }
+//        return matchingProducts;
+
+        // logic in one line with using stream
+        return products.values().stream()
+                .filter(product -> isNameMatching(name, product))
+                .collect(toList());
+    }
+
+    private static boolean isNameMatching(String name, Product product) {
+        return product.getName().toLowerCase().contains(name.toLowerCase());
+    }
+
+    public List<Product> searchByProductPriceRange(Double lowerpice, Double higherpice) {
+        List<Product> matchingProducts = products.values().stream()
+                .filter(product -> isPriceRangeValid(lowerpice, higherpice, product))
+//                .sorted((Product p1, Product p2) -> Double.compare(p1.getPrice(), p2.getPrice()))
+                .collect(Collectors.toList());
+//        List<Product> allProducts = new ArrayList<>(matchingProducts);
+//        Collections.sort(matchingProducts, (Product p1, Product p2) -> Double.compare(p1.getPrice(), p2.getPrice()));
+
+//        return products.values().stream().filter(product -> isPriceRangeValid(lowerpice, higherpice, product)).toList();
+        return matchingProducts;
+    }
+
+    private boolean isPriceRangeValid(Double lowerpice, Double higherpice, Product product) {
+        return product.getPrice() >= lowerpice && product.getPrice() <= higherpice;
     }
 }

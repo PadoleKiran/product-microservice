@@ -20,8 +20,26 @@ public class ProductController {
         this.productService = productService;
     }
 
+    // search feature (all, category, name)
     @GetMapping
-    public List<Product> getAllProducts(){
+    public List<Product> getAllProducts(@RequestParam(required = false) String category, @RequestParam(required = false) String name, @RequestParam(name="lower-price", required = false) Double lowerpice, @RequestParam(name = "higher-price", required = false) Double higherpice){
+//        System.out.println(category + " category");
+
+        System.out.println("lower pice : " + lowerpice + "\nhiger price : " + higherpice);
+        // searching by category
+        if (category != null) {
+            Category cat = Category.valueOf(category);
+            return productService.searchByCategory(cat);
+        }
+
+        // searching by name
+        if (name != null) {
+            return productService.searchByName(name);
+        }
+
+        if (lowerpice != null && higherpice != null) {
+            return productService.searchByProductPriceRange(lowerpice, higherpice);
+        }
         System.out.println("This is product controller ");
         return productService.getAll();
     }
@@ -66,8 +84,8 @@ public class ProductController {
         }
     }
 
-    @GetMapping("/search/{category}")
-    public List<Product> getProductByCategory(@PathVariable Category category) {
-        return productService.getByCategory(category);
-    }
+//    @GetMapping("/search/{category}")
+//    public List<Product> getProductByCategory(@PathVariable Category category) {
+//        return productService.getByCategory(category);
+//    }
 }
